@@ -6,7 +6,8 @@ express=require("express");
 bodyParser=require("body-parser");
 ejs=require("ejs");
 mongoose=require("mongoose");
-encryption=require("mongoose-encryption");
+// encryption=require("mongoose-encryption");
+md5=require("md5");
 app=express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine',"ejs");
@@ -18,7 +19,7 @@ const userSchema= new mongoose.Schema({
   email:String,
   password:String
 });
-userSchema.plugin(encryption, {secret:process.env.secret,encryptedFields:["password"]});
+// userSchema.plugin(encryption, {secret:process.env.secret,encryptedFields:["password"]});
 const User= mongoose.model("user", userSchema);
 
 app.get("/",function(req,res){
@@ -33,7 +34,7 @@ if(err){
   console.log(err);
 }else{
   if(founduser){
-    if(founduser.password===req.body.password){
+    if(founduser.password===md5(req.body.password)){
       res.render("secrets");
     }else{
       res.send("wrong password");
@@ -55,7 +56,7 @@ app.post("/register",function(req,res){
     res.send("you are already registered");
     }else{  const newuser=new User({
       email:req.body.username,
-      password:req.body.password
+      password: md5(req.body.password)
       });
       newuser.save(function(err,result){
         if (err){
